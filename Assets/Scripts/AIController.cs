@@ -29,9 +29,29 @@ public class AIController : MonoBehaviour
 
 
     // Add State Machine code Here
+    public StateMachine StateMachine { get; private set; }
+
+    void Start()
+    {
+        Agent = GetComponent<NavMeshAgent>();
+        aiAnimationController = GetComponent<AIAnimationController>();
+
+        StateMachine = new StateMachine();
+        StateMachine.AddState(new IdleState(this));
+        StateMachine.AddState(new PatrolState(this));
+        StateMachine.AddState(new ChaseState(this));
+        StateMachine.AddState(new AttackState(this)); // Add the new AttackState
+        StateMachine.TransitionToState(StateType.Idle);
+    }
+
+    void Update()
+    {
+        StateMachine.Update();
+        currentState = StateMachine.GetCurrentStateType();
+    }
 
 
-    
+
     // 
     public bool CanSeePlayer()
     {
@@ -45,6 +65,7 @@ public class AIController : MonoBehaviour
         Vector3 directionToPlayer = (targetPosition - eyePosition).normalized;
         float distanceToPlayer = Vector3.Distance(eyePosition, targetPosition);
         float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
+
 
         // Check field of view
         if (angleToPlayer > viewAngle / 2f)
